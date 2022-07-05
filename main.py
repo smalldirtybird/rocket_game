@@ -1,7 +1,9 @@
 import asyncio
-import time
 import curses
+import os
 import random
+import time
+from itertools import cycle
 
 TIC_TIMEOUT = 0.1
 
@@ -34,12 +36,14 @@ def generate_starry_sky(canvas, max_rows, max_columns):
         row = random.randint(1, max_rows)
         column = random.randint(1, max_columns)
         if [row, column] not in coords_seen:
-            stars.append(blink(canvas, row, column, symbol=random.choice('+*.:')))
+            stars.append(blink(
+                canvas, row, column, symbol=random.choice('+*.:')))
             coords_seen.append([row, column])
     return stars
 
 
-async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
+async def fire(
+        canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
     row, column = start_row, start_column
     canvas.addstr(round(row), round(column), '*')
     await asyncio.sleep(0)
@@ -60,11 +64,46 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
         column += columns_speed
 
 
-def draw(canvas):
+def draw_frame(canvas, start_row, start_column, text, negative=False):
+    rows_number, columns_number = canvas.getmaxyx()
+    for row, line in enumerate(text.splitlines(), round(start_row)):
+        if row < 0:
+            continue
+        if row >= rows_number:
+            break
+        for column, symbol in enumerate(line, round(start_column)):
+            if column < 0:
+                continue
+            if column >= columns_number:
+                break
+            if symbol == ' ':
+                continue
+            if row == rows_number - 1 and column == columns_number - 1:
+                continue
+            symbol = symbol if not negative else ' '
+            canvas.addch(row, column, symbol)
+
+
+async def animate_spaceship(canvas, row, column, animation_frames):
+    for frame in cycle(animation_frames):
+        draw_frame(canvas, row, column, frame)
+        canvas.refresh()
+        for _ in range(5):
+            await asyncio.sleep(0)
+        draw_frame(canvas, row, column, frame, negative=True)
+
+
+def draw(canvas, animation_frames):
     window_height, window_width = curses.window.getmaxyx(canvas)
-    coroutines = generate_starry_sky(canvas, window_height - 1, window_width - 1)
+    coroutines = generate_starry_sky(
+        canvas, window_height - 1, window_width - 1)
     gun_shot = fire(canvas, window_height - 1, (window_width - 1) / 2)
+    spaceship = animate_spaceship(canvas,
+                                  window_height / 2 - 5,
+                                  (window_width - 1) / 2 - 2,
+                                  animation_frames)
     coroutines.append(gun_shot)
+    coroutines.append(spaceship)
     curses.curs_set(False)
     canvas.border()
     while True:
@@ -78,8 +117,15 @@ def draw(canvas):
 
 
 def main():
-    curses.update_lines_cols()
-    curses.wrapper(draw)
+    spaceship_frames_folder_path = os.path.normpath(r'animations/spaceship/')
+    spaceship_frames_filepaths = os.listdir(spaceship_frames_folder_path)
+    spaceship_frames = []
+    for filename in spaceship_frames_filepaths:
+        filepath = os.path.join(spaceship_frames_folder_path, filename)
+        with open(filepath) as frame_file:
+            spaceship_frames.append(frame_file.read())
+    spaceship_frames
+    curses.wrapper(draw, spaceship_frames)
 
 
 if __name__ == '__main__':
