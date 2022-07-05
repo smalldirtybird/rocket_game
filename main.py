@@ -90,45 +90,49 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
 
 
 def read_controls(canvas):
-    """Read keys pressed and returns tuple witl controls state."""
-
     rows_direction = columns_direction = 0
     space_pressed = False
-
     while True:
         pressed_key_code = canvas.getch()
-
         if pressed_key_code == -1:
-            # https://docs.python.org/3/library/curses.html#curses.window.getch
             break
-
         if pressed_key_code == UP_KEY_CODE:
             rows_direction = -1
-
         if pressed_key_code == DOWN_KEY_CODE:
             rows_direction = 1
-
         if pressed_key_code == RIGHT_KEY_CODE:
             columns_direction = 1
-
         if pressed_key_code == LEFT_KEY_CODE:
             columns_direction = -1
-
         if pressed_key_code == SPACE_KEY_CODE:
             space_pressed = True
-
     return rows_direction, columns_direction, space_pressed
 
 
-async def animate_spaceship(canvas, row, column, animation_frames):
+async def animate_spaceship(canvas,
+                            window_height,
+                            window_width,
+                            animation_frames):
     canvas.nodelay(True)
-    row_changed = row
-    column_changed = column
+    row_changed = window_height / 2 - 5
+    column_changed = (window_width - 1) / 2 - 2
+    extreme_upper_border = 0
+    extreme_lower_border = window_height - 9
+    extreme_left_border = 0
+    extreme_right_border = window_width - 5
     for frame in cycle(animation_frames):
         rows_direction, columns_direction, space_pressed = read_controls(
             canvas)
         row_changed += rows_direction
+        if row_changed < extreme_upper_border:
+            row_changed = extreme_upper_border
+        if row_changed > extreme_lower_border:
+            row_changed = extreme_lower_border
         column_changed += columns_direction
+        if column_changed < extreme_left_border:
+            column_changed = extreme_left_border
+        if column_changed > extreme_right_border:
+            column_changed = extreme_right_border
         draw_frame(canvas, row_changed, column_changed, frame)
         canvas.refresh()
         await asyncio.sleep(0)
@@ -141,13 +145,12 @@ def draw(canvas, animation_frames):
         canvas, window_height - 1, window_width - 1)
     gun_shot = fire(canvas, window_height - 1, (window_width - 1) / 2)
     spaceship = animate_spaceship(canvas,
-                                  window_height / 2 - 5,
-                                  (window_width - 1) / 2 - 2,
+                                  window_height,
+                                  window_width,
                                   animation_frames)
     coroutines.append(gun_shot)
     coroutines.append(spaceship)
     curses.curs_set(False)
-    canvas.border()
     while True:
         try:
             canvas.refresh()
