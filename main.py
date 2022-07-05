@@ -62,19 +62,19 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
 
 def draw(canvas):
     window_height, window_width = curses.window.getmaxyx(canvas)
-    stars = generate_starry_sky(canvas, window_height - 1, window_width - 1)
+    coroutines = generate_starry_sky(canvas, window_height - 1, window_width - 1)
+    gun_shot = fire(canvas, window_height - 1, (window_width - 1) / 2)
+    coroutines.append(gun_shot)
     curses.curs_set(False)
     canvas.border()
-    gun_shot = fire(canvas, window_height - 1, (window_width - 1) / 2)
     while True:
         try:
-            for star in stars.copy():
-                star.send(None)
-                canvas.refresh()
+            canvas.refresh()
+            for coroutine in coroutines.copy():
+                coroutine.send(None)
             time.sleep(TIC_TIMEOUT)
-            gun_shot.send(None)
         except StopIteration:
-            break
+            coroutines.remove(coroutine)
 
 
 def main():
