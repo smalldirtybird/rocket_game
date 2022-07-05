@@ -6,6 +6,11 @@ import time
 from itertools import cycle
 
 TIC_TIMEOUT = 0.1
+SPACE_KEY_CODE = 32
+LEFT_KEY_CODE = 260
+RIGHT_KEY_CODE = 261
+UP_KEY_CODE = 259
+DOWN_KEY_CODE = 258
 
 
 async def blink(canvas, row, column, symbol='*'):
@@ -84,13 +89,50 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
             canvas.addch(row, column, symbol)
 
 
+def read_controls(canvas):
+    """Read keys pressed and returns tuple witl controls state."""
+
+    rows_direction = columns_direction = 0
+    space_pressed = False
+
+    while True:
+        pressed_key_code = canvas.getch()
+
+        if pressed_key_code == -1:
+            # https://docs.python.org/3/library/curses.html#curses.window.getch
+            break
+
+        if pressed_key_code == UP_KEY_CODE:
+            rows_direction = -1
+
+        if pressed_key_code == DOWN_KEY_CODE:
+            rows_direction = 1
+
+        if pressed_key_code == RIGHT_KEY_CODE:
+            columns_direction = 1
+
+        if pressed_key_code == LEFT_KEY_CODE:
+            columns_direction = -1
+
+        if pressed_key_code == SPACE_KEY_CODE:
+            space_pressed = True
+
+    return rows_direction, columns_direction, space_pressed
+
+
 async def animate_spaceship(canvas, row, column, animation_frames):
+    canvas.nodelay(True)
+    row_changed = row
+    column_changed = column
     for frame in cycle(animation_frames):
-        draw_frame(canvas, row, column, frame)
+        rows_direction, columns_direction, space_pressed = read_controls(
+            canvas)
+        row_changed += rows_direction
+        column_changed += columns_direction
+        draw_frame(canvas, row_changed, column_changed, frame)
         canvas.refresh()
-        for _ in range(5):
-            await asyncio.sleep(0)
-        draw_frame(canvas, row, column, frame, negative=True)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row_changed, column_changed, frame, negative=True)
 
 
 def draw(canvas, animation_frames):
