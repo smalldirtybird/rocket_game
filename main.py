@@ -47,28 +47,6 @@ def generate_starry_sky(canvas, max_rows, max_columns):
     return stars
 
 
-async def fire(
-        canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
-    row, column = start_row, start_column
-    canvas.addstr(round(row), round(column), '*')
-    await asyncio.sleep(0)
-    canvas.addstr(round(row), round(column), 'O')
-    await asyncio.sleep(0)
-    canvas.addstr(round(row), round(column), ' ')
-    row += rows_speed
-    column += columns_speed
-    symbol = '-' if columns_speed else '|'
-    rows, columns = canvas.getmaxyx()
-    max_row, max_column = rows - 1, columns - 1
-    curses.beep()
-    while 0 < row < max_row and 0 < column < max_column:
-        canvas.addstr(round(row), round(column), symbol)
-        await asyncio.sleep(0)
-        canvas.addstr(round(row), round(column), ' ')
-        row += rows_speed
-        column += columns_speed
-
-
 def draw_frame(canvas, start_row, start_column, text, negative=False):
     rows_number, columns_number = canvas.getmaxyx()
     for row, line in enumerate(text.splitlines(), round(start_row)):
@@ -109,10 +87,8 @@ def read_controls(canvas):
     return rows_direction, columns_direction, space_pressed
 
 
-async def animate_spaceship(canvas,
-                            window_height,
-                            window_width,
-                            animation_frames):
+async def animate_spaceship(
+        canvas, window_height, window_width, animation_frames):
     canvas.nodelay(True)
     row_changed = window_height / 2 - 5
     column_changed = (window_width - 1) / 2 - 2
@@ -143,12 +119,10 @@ def draw(canvas, animation_frames):
     window_height, window_width = curses.window.getmaxyx(canvas)
     coroutines = generate_starry_sky(
         canvas, window_height - 1, window_width - 1)
-    gun_shot = fire(canvas, window_height - 1, (window_width - 1) / 2)
     spaceship = animate_spaceship(canvas,
                                   window_height,
                                   window_width,
                                   animation_frames)
-    coroutines.append(gun_shot)
     coroutines.append(spaceship)
     curses.curs_set(False)
     while True:
