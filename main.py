@@ -5,6 +5,8 @@ import random
 import time
 from itertools import cycle
 
+from dotenv import load_dotenv
+
 TIC_TIMEOUT = 0.1
 SPACE_KEY_CODE = 32
 LEFT_KEY_CODE = 260
@@ -33,8 +35,9 @@ async def blink(canvas, row, column, symbol='*'):
             await asyncio.sleep(0)
 
 
-def generate_starry_sky(canvas, max_rows, max_columns):
-    stars_count = max_columns
+def generate_starry_sky(canvas, window_height, window_width):
+    stars_count = max_columns = window_width - 1
+    max_rows = window_height - 1
     coords_seen = []
     stars = []
     for number in range(stars_count):
@@ -92,25 +95,26 @@ async def animate_spaceship(
     canvas.nodelay(True)
     row_changed = window_height / 2 - 5
     column_changed = (window_width - 1) / 2 - 2
-    extreme_upper_border = 0
-    extreme_lower_border = window_height - 9
-    extreme_left_border = 0
-    extreme_right_border = window_width - 5
+    upper_border = 0
+    lower_border = window_height - 9
+    left_border = 0
+    right_border = window_width - 5
     for frame in cycle(animation_frames):
         rows_direction, columns_direction, space_pressed = read_controls(
             canvas)
         row_changed += rows_direction
-        if row_changed < extreme_upper_border:
-            row_changed = extreme_upper_border
-        if row_changed > extreme_lower_border:
-            row_changed = extreme_lower_border
         column_changed += columns_direction
-        if column_changed < extreme_left_border:
-            column_changed = extreme_left_border
-        if column_changed > extreme_right_border:
-            column_changed = extreme_right_border
+        if row_changed < upper_border:
+            row_changed = upper_border
+        if row_changed > lower_border:
+            row_changed = lower_border
+        if column_changed < left_border:
+            column_changed = left_border
+        if column_changed > right_border:
+            column_changed = right_border
         draw_frame(canvas, row_changed, column_changed, frame)
         canvas.refresh()
+        await asyncio.sleep(0)
         await asyncio.sleep(0)
         draw_frame(canvas, row_changed, column_changed, frame, negative=True)
 
@@ -118,11 +122,9 @@ async def animate_spaceship(
 def draw(canvas, animation_frames):
     window_height, window_width = curses.window.getmaxyx(canvas)
     coroutines = generate_starry_sky(
-        canvas, window_height - 1, window_width - 1)
-    spaceship = animate_spaceship(canvas,
-                                  window_height,
-                                  window_width,
-                                  animation_frames)
+        canvas, window_height, window_width)
+    spaceship = animate_spaceship(
+        canvas, window_height, window_width, animation_frames)
     coroutines.append(spaceship)
     curses.curs_set(False)
     while True:
@@ -136,14 +138,14 @@ def draw(canvas, animation_frames):
 
 
 def main():
-    spaceship_frames_folder_path = os.path.normpath(r'animations/spaceship/')
+    load_dotenv()
+    spaceship_frames_folder_path = os.environ['SPACESHIP_ANIMATION_PATH']
     spaceship_frames_filepaths = os.listdir(spaceship_frames_folder_path)
     spaceship_frames = []
     for filename in spaceship_frames_filepaths:
         filepath = os.path.join(spaceship_frames_folder_path, filename)
         with open(filepath) as frame_file:
             spaceship_frames.append(frame_file.read())
-    spaceship_frames
     curses.wrapper(draw, spaceship_frames)
 
 
