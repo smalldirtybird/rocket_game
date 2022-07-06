@@ -5,8 +5,6 @@ import random
 import time
 from itertools import cycle
 
-from dotenv import load_dotenv
-
 TIC_TIMEOUT = 0.1
 SPACE_KEY_CODE = 32
 LEFT_KEY_CODE = 260
@@ -138,8 +136,7 @@ def draw(canvas, animation_frames):
 
 
 def main():
-    load_dotenv()
-    spaceship_frames_folder_path = os.environ['SPACESHIP_ANIMATION_PATH']
+    spaceship_frames_folder_path = os.path.normpath(r'./animations/spaceship/')
     spaceship_frames_filepaths = os.listdir(spaceship_frames_folder_path)
     spaceship_frames = []
     for filename in spaceship_frames_filepaths:
