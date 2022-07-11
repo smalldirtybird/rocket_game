@@ -113,7 +113,6 @@ async def animate_spaceship(
         if column > max(horizontal_borders):
             column = max(horizontal_borders)
         draw_frame(canvas, row, column, frame)
-        canvas.refresh()
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, frame, negative=True)
 
@@ -128,9 +127,9 @@ def draw(canvas, animation_frames):
     curses.curs_set(False)
     while True:
         try:
-            canvas.refresh()
             for coroutine in coroutines.copy():
                 coroutine.send(None)
+                canvas.refresh()
             time.sleep(TIC_TIMEOUT)
         except StopIteration:
             coroutines.remove(coroutine)
