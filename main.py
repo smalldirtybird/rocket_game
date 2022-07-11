@@ -120,9 +120,16 @@ async def animate_spaceship(
 def draw(canvas, animation_frames):
     window_height, window_width = curses.window.getmaxyx(canvas)
     coroutines = generate_starry_sky(
-        canvas, window_height, window_width)
+        canvas,
+        window_height,
+        window_width,
+    )
     spaceship = animate_spaceship(
-        canvas, window_height, window_width, animation_frames)
+        canvas,
+        window_height,
+        window_width,
+        animation_frames,
+    )
     coroutines.append(spaceship)
     curses.curs_set(False)
     while True:
