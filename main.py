@@ -97,23 +97,21 @@ async def animate_spaceship(
     horizontal_center_position = (window_width - spaceship_width) / 2
     row = vertical_center_position
     column = horizontal_center_position
-    upper_border = 0
-    lower_border = window_height - spaceship_height
-    left_border = 0
-    right_border = window_width - spaceship_width
+    vertical_borders = [0, window_height - spaceship_height]
+    horizontal_borders = [0, window_width - spaceship_width]
     for frame in cycle(animation_frames):
         rows_direction, columns_direction, space_pressed = read_controls(
             canvas)
         row += rows_direction
         column += columns_direction
-        if row < upper_border:
-            row = upper_border
-        if row > lower_border:
-            row = lower_border
-        if column < left_border:
-            column = left_border
-        if column > right_border:
-            column = right_border
+        if row < min(vertical_borders):
+            row = min(vertical_borders)
+        if row > max(vertical_borders):
+            row = max(vertical_borders)
+        if column < min(horizontal_borders):
+            column = min(horizontal_borders)
+        if column > max(horizontal_borders):
+            column = max(horizontal_borders)
         draw_frame(canvas, row, column, frame)
         canvas.refresh()
         await asyncio.sleep(0)
