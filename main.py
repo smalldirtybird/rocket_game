@@ -115,7 +115,6 @@ async def animate_spaceship(
         draw_frame(canvas, row, column, frame)
         canvas.refresh()
         await asyncio.sleep(0)
-        await asyncio.sleep(0)
         draw_frame(canvas, row, column, frame, negative=True)
 
 
@@ -144,7 +143,9 @@ def main():
     for filename in spaceship_frames_filepaths:
         filepath = os.path.join(spaceship_frames_folder_path, filename)
         with open(filepath) as frame_file:
-            spaceship_frames.append(frame_file.read())
+            spaceship_frame = frame_file.read()
+            spaceship_frames.append(spaceship_frame)
+            spaceship_frames.append(spaceship_frame)
     curses.wrapper(draw, spaceship_frames)
 
 
