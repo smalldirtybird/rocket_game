@@ -136,10 +136,10 @@ def draw(canvas, animation_frames):
         try:
             for coroutine in coroutines.copy():
                 coroutine.send(None)
-            canvas.refresh()
-            time.sleep(TIC_TIMEOUT)
         except StopIteration:
             coroutines.remove(coroutine)
+        canvas.refresh()
+        time.sleep(TIC_TIMEOUT)
 
 
 def main():
