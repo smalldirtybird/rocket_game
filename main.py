@@ -133,14 +133,13 @@ def draw(canvas, animation_frames):
     coroutines.append(spaceship)
     curses.curs_set(False)
     while True:
-        try:
-            for coroutine in coroutines.copy():
+        for coroutine in coroutines.copy():
+            try:
                 coroutine.send(None)
-        except StopIteration:
-            coroutines.remove(coroutine)
-        finally:
-            canvas.refresh()
-            time.sleep(TIC_TIMEOUT)
+            except StopIteration:
+                coroutines.remove(coroutine)
+        canvas.refresh()
+        time.sleep(TIC_TIMEOUT)
 
 
 def main():
