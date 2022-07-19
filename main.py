@@ -99,7 +99,8 @@ async def animate_spaceship(
     horizontal_limit = window_width - spaceship_width
     for frame in cycle(animation_frames):
         rows_direction, columns_direction, space_pressed = read_controls(
-            canvas)
+            canvas,
+        )
         row += rows_direction
         row = min(max(0, row), vertical_limit)
         column += columns_direction
