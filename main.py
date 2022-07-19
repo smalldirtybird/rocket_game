@@ -150,8 +150,7 @@ def main():
         filepath = os.path.join(spaceship_frames_folder_path, filename)
         with open(filepath) as frame_file:
             spaceship_frame = frame_file.read()
-            spaceship_frames.append(spaceship_frame)
-            spaceship_frames.append(spaceship_frame)
+            spaceship_frames.extend([spaceship_frame, spaceship_frame])
     curses.wrapper(draw, spaceship_frames)
 
 
